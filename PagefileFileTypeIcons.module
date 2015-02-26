@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * Add Icons to ProcessWire File Fieldtype
+ *
+ * ProcessWire 2.x 
+ * Copyright (C) 2013 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * All icons contained are in public domain and taken from
+ * http://www.splitbrain.org/projects/file_icons
+ *
+ * http://processwire.com
+ *
+ */
+
+class PagefileFileTypeIcons extends Wire implements Module {
+
+	private $basePath;
+	private $baseURL;
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => __('FileTypeIcons'),
+			'version' => 100,
+			'summary' => __('Add Icons to ProcessWire File Fieldtype.'),
+			'autoload' => true,
+			'requires' => array(
+				'LanguageSupport'
+			)
+		);
+	}
+	
+	/* Setup path, url and hook.
+	 * This adds a getFileIcon method to the Pagefile class.
+	 */
+	public function init()
+	{
+		$class = $this->className();
+		$this->basePath = $this->config->paths->$class . "fileicons" . DIRECTORY_SEPARATOR;
+		$this->baseURL  = $this->config->urls->$class . "fileicons/";
+		$this->addHook('Pagefile::getFileIcon', $this, 'getFileIcon');
+	}
+	
+	/* Retrieve the URL for an icon matching the filename.
+	 * The icon name equals the lowercase file extension appended '.png'.
+	 * Icon location is the 'fileicons' directory under the module dir.
+	 * You can add your own icons by dropping them into the fileicons directy.
+	 * If no icon is found, the empty page symbol is returned.
+	 */
+	public function getFileIcon($event)
+	{
+		$pagefile = $event->object;
+		$ext = strtolower(preg_replace('/^.*\./', '', $pagefile->filename()));
+		if( ! is_file($this->basePath . $ext . ".png") )
+		{
+			$ext = "file";
+		}
+		$event->return = $this->baseURL . $ext . ".png";
+	}
+}
+
+?>
